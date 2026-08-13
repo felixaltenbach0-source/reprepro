@@ -343,7 +343,7 @@ static retvalue searchforfile(const char *changesdir, const char *basefilename, 
 static retvalue findfile(const char *filename, const struct changes *c, /*@null@*/const struct strlist *searchpath, /*@null@*/const char *searchfirstin, char **result) {
 	char *fullfilename;
 
-	if (rindex(filename, '/') == NULL) {
+	if (strrchr(filename, '/') == NULL) {
 		retvalue r;
 
 		r = searchforfile(c->basedir, filename,
@@ -2948,7 +2948,7 @@ static retvalue splitpath(struct strlist *list, const char *path) {
 	retvalue r;
 	const char *next;
 
-	while ((next = index(path, ':')) != NULL) {
+	while ((next = strchr(path, ':')) != NULL) {
 		if (next > path) {
 			char *dir = strndup(path, next-path);
 			if (FAILEDTOALLOC(dir)) {

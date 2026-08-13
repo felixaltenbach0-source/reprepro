@@ -250,9 +250,9 @@ static retvalue splitnameandversion(const char *nameandversion, const char **nam
 	char *version;
 	retvalue r;
 
-	version = index(nameandversion, '=');
+	version = strchr(nameandversion, '=');
 	if (version != NULL) {
-		if (index(version+1, '=') != NULL) {
+		if (strchr(version+1, '=') != NULL) {
 			fprintf(stderr,
 "Cannot parse '%s': more than one '='\n",
 					nameandversion);
@@ -938,7 +938,7 @@ ACTION_D(n, n, y, removesrc) {
 		data[0].sourceversion = NULL;
 	else
 		data[0].sourceversion = argv[3];
-	if (index(data[0].sourcename, '=') != NULL && verbose >= 0) {
+	if (strchr(data[0].sourcename, '=') != NULL && verbose >= 0) {
 		fputs(
 "Warning: removesrc treats '=' as normal character.\n"
 "Did you want to use removesrcs?\n",

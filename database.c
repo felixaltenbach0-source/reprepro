@@ -267,7 +267,11 @@ static const uint32_t types[dbt_COUNT] = {
 	DB_HASH
 };
 
-static int debianversioncompare(UNUSED(DB *db), const DBT *a, const DBT *b);
+static int debianversioncompare(UNUSED(DB *db), const DBT *a, const DBT *b
+#if DB_VERSION_MAJOR >= 6
+	, UNUSED(size_t *locp)
+#endif
+);
 #if DB_VERSION_MAJOR >= 6
 static int paireddatacompare(UNUSED(DB *db), const DBT *a, const DBT *b, size_t *locp);
 #else
@@ -315,11 +319,7 @@ static retvalue database_opentable(const char *filename, /*@null@*/const char *s
 		}
 	}
 
-#if DB_VERSION_MAJOR == 5 || DB_VERSION_MAJOR == 6
-#define DB_OPEN(database, filename, name, type, flags) \
-	database->open(database, NULL, filename, name, type, flags, 0664)
-#else
-#if DB_VERSION_MAJOR == 4
+#if DB_VERSION_MAJOR >= 4
 #define DB_OPEN(database, filename, name, type, flags) \
 	database->open(database, NULL, filename, name, type, flags, 0664)
 #else
@@ -328,7 +328,6 @@ static retvalue database_opentable(const char *filename, /*@null@*/const char *s
 	database->open(database, filename, name, type, flags, 0664)
 #else
 #error Unexpected DB_VERSION_MAJOR!
-#endif
 #endif
 #endif
 	dbret = DB_OPEN(table, filename, subtable, types[type], flags);
@@ -1091,7 +1090,7 @@ retvalue table_close(struct table *table) {
 	}
 
 	for (struct opened_tables *iter = opened_tables; iter != NULL; iter = iter->next) {
-		if(strcmp2(iter->name, table->name) == 0 && strcmp2(iter->subname, table->subname) == 0) {
+		if(strcmp(iter->name, table->name) == 0 && strcmp(iter->subname, table->subname) == 0) {
 			if (prev == NULL) {
 				opened_tables = iter->next;
 			} else {
@@ -1858,7 +1857,7 @@ static retvalue database_table_secondary(const char *filename, const char *subta
 		        filename, subtable, type, flags, secondary_filename, secondary_type);
 
 	for (struct opened_tables *iter = opened_tables; iter != NULL; iter = iter->next) {
-		if(strcmp2(iter->name, filename) == 0 && strcmp2(iter->subname, subtable) == 0) {
+		if(strcmp(iter->name, filename) == 0 && strcmp(iter->subname, subtable) == 0) {
             fprintf(stderr,
  "Internal Error: Trying to open table '%s' from file '%s' multiple times.\n"
  "This should normally not happen (to avoid triggering bugs in the underlying BerkeleyDB)\n",
@@ -1974,7 +1973,11 @@ retvalue database_openreferences(void) {
 	return RET_OK;
 }
 
-static int debianversioncompare(UNUSED(DB *db), const DBT *a, const DBT *b) {
+static int debianversioncompare(UNUSED(DB *db), const DBT *a, const DBT *b
+#if DB_VERSION_MAJOR >= 6
+	, UNUSED(size_t *locp)
+#endif
+) {
 	const char *a_version;
 	const char *b_version;
 	int versioncmp;
